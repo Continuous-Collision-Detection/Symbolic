@@ -110,4 +110,6 @@ for k in range(loop_from, loop_to):
 
     print("done {}/{}".format(k+1-loop_from, loop_to-loop_from), flush=True)
 
+if session:
+    session.terminate()
 print("done procedding 1", flush=True)
