@@ -32,7 +32,7 @@ else:
 
 print(f"attempting to use {WolframKernel_path}")
 
-session = open_session(WolframKernel_path, "roots_vf.mma")
+session = open_session(WolframKernel_path, "roots_vf.wl")
 
 if not session:
     print("failed to open mathematica!")

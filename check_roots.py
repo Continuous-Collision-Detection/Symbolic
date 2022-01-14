@@ -35,7 +35,7 @@ edge_edge = sys.argv[4] == 'True'
 suffix = "" if edge_edge else "_vf"
 out_folder = "tmp" + suffix
 
-mma_file = "roots_ee.mma" if edge_edge else "roots_vf.mma"
+mma_file = "roots_ee.wl" if edge_edge else "roots_vf.wl"
 
 out_path = os.path.join(out_path, out_folder)
 if not os.path.exists(out_path):
