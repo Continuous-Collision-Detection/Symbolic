@@ -1,12 +1,12 @@
-roots[data_] :=
+roots[data_, outfile_ : ""] :=
     Module[ {
          a0s, a1s, b0s, b1s,
-	     a0e, a1e, b0e, b1e,
-	     las, lae, lbs, lbe,
+         a0e, a1e, b0e, b1e,
+         las, lae, lbs, lbe,
          lla, llb,
-	     sss, t, la, lb, value,
-	     i, n, str, isComplex, result
-	    },
+         sss, t, la, lb, value, validRoots,
+         i, n, str, isComplex, result
+        },
 
         (* Print[data];
         Print[data[[1, 6]]];
@@ -46,15 +46,16 @@ roots[data_] :=
 
 
         sss = Solve[
-        Simplify[lla[[1]]==llb[[1]]] &&
-        Simplify[lla[[2]]==llb[[2]]] &&
-        Simplify[lla[[3]]==llb[[3]]],
-        {t, la, lb}];
+            Simplify[lla[[1]]==llb[[1]]] &&
+            Simplify[lla[[2]]==llb[[2]]] &&
+            Simplify[lla[[3]]==llb[[3]]],
+            {t, la, lb}];
         sss = Simplify[sss];
         (* Print[N[sss]]; *)
 
         value = False;
         result = "";
+        validRoots = {};
 
         For[i = 1, i <= Length[sss], i++,
             n = Length[sss[[i]]];
@@ -69,9 +70,17 @@ roots[data_] :=
  
             value = Reduce[value];
 
+            If[value, 
+                AppendTo[validRoots, {"t"->t, "la"->la, "lb"->lb}/.sss[[i]]];
+            ];
+
             result = result <> ToString[value] <> "\n#####";
         ];
 
+        If[Length[validRoots] > 0 && outfile != "",
+            BinaryWrite[outfile, BinarySerialize[validRoots]];
+            Close[outfile];
+        ];
+
         Return[result];
-	]
-    
+    ]
