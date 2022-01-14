@@ -5,7 +5,7 @@ roots[data_, outfile_ : ""] :=
          las, lae, lbs, lbe,
          lla, llb,
          sss, t, la, lb, value, validRoots,
-         i, n, str, isComplex, result
+         i, n, str, isComplex, result, simpleSol
         },
 
         (* Print[data];
@@ -70,8 +70,23 @@ roots[data_, outfile_ : ""] :=
  
             value = Reduce[value];
 
-            If[value, 
-                AppendTo[validRoots, {"t"->t, "la"->la, "lb"->lb}/.sss[[i]]];
+            simpleSol = True;
+            If[value, Null;, Null;,
+                (* https://mathematica.stackexchange.com/q/188960 *)
+                value = RegionMeasure[
+                            ImplicitRegion[Reduce[{value, 0 <= t <= 1}, t], t], 
+                            Length[Flatten[{t}]]] > 0;
+                simpleSol = False;
+            ];
+            
+            If[value,
+                If[simpleSol,
+                    AppendTo[validRoots, {"t"->t, "a"->a, "b"->b}/.sss[[i]]];,
+                    AppendTo[validRoots, {
+                        "t"->First[Reduce[{Reduce[(la >= 0 && la <= 1 && lb >= 0 && lb <= 1)/.sss[[1]]], 0 <= t <= 1}, t]], 
+                        "a"->a, 
+                        "b"->b}/.sss[[i]]];
+                ];
             ];
 
             result = result <> ToString[value] <> "\n#####";

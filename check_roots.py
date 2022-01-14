@@ -10,105 +10,93 @@ input arguments:
 
 for every file in the range it generate "out_path/tmp_<vf|ee>/out_<folder>_<infile>.pkl", which contains a list of tuples (file, i, collision)
 """
-import os
-import glob
 import numpy as np
 import subprocess
 import pickle
 from shutil import copyfile
-import sys
 import time
+import argparse
+import pathlib
+import ast
 
-from wolframclient.evaluation import WolframLanguageSession
-from wolframclient.language import wl, wlexpr, Global
+from wolframclient.language import Global
 
+from utils import *
 
-WolframKernel_path = sys.argv[5]
-out_path = sys.argv[6]
-root_path = sys.argv[7]
+################################################################################
 
-file_data = sys.argv[1]
-loop_from = int(sys.argv[2])
-loop_to = int(sys.argv[3])
-edge_edge = sys.argv[4] == 'True'
+parser = argparse.ArgumentParser(
+    description="""
+        Script to batch process many queries. 
+        For every file in the range it generates 
+        "out_path/tmp_<vf|ee>/out_<folder>_<infile>.pkl", which contains a list of tuples (file, i, collision).""",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument("file_data")
+parser.add_argument("loop_from", type=int)
+parser.add_argument("loop_to", type=int)
+parser.add_argument("edge_edge", type=ast.literal_eval)
+parser.add_argument("--wolfram_kernel_path", 
+                    dest="WolframKernel_path",
+                    default=default_wolfram_kernel_path(), 
+                    help=f"path to Wolfram kernel")
+parser.add_argument("out_path", type=pathlib.Path)
+parser.add_argument("root_path", type=pathlib.Path)
 
-suffix = "" if edge_edge else "_vf"
-out_folder = "tmp" + suffix
+args = parser.parse_args()
 
-mma_file = "roots_ee.wl" if edge_edge else "roots_vf.wl"
+################################################################################
 
-out_path = os.path.join(out_path, out_folder)
-if not os.path.exists(out_path):
-    os.mkdir(out_path)
-
+out_folder = "tmp" if args.edge_edge else "tmp_vf"
+out_path = args.out_path / out_folder
+out_path.mkdir(parents=True, exist_ok=True)
 print("- output directory: {}".format(out_path), flush=True)
 
-with open(file_data, 'rb') as f:
+mma_file = "roots_ee.wl" if args.edge_edge else "roots_vf.wl"
+
+with open(args.file_data, 'rb') as f:
     all_files = pickle.load(f)
 
-loop_to = min(loop_to, len(all_files))
+loop_from = args.loop_from
+loop_to = min(args.loop_to, len(all_files))
 
 session = None
-for k in range(loop_from, loop_to):
-    folder = all_files[k][0]
-    infile = all_files[k][1]
-
-    if edge_edge:
-        data_folder = os.path.join(
-            root_path, folder)
-    else:
-        data_folder = os.path.join(
-            root_path, folder)
-
-    file = os.path.join(data_folder, infile + ".csv")
-    print("- processing file: {}".format(file), flush=True)
+for k, (folder, infile) in enumerate(all_files[loop_from:loop_to]):
+    file = root_path / folder / (infile + ".csv")
+    print(f"- processing file: {file}", flush=True)
 
     outs = []
-    out_pickle = "out_"+folder+"_"+infile+".pkl"
+    out_pickle = f"out_{folder}_{infile}.pkl"
 
-    if os.path.exists(os.path.join(out_path, out_pickle)):
-        with open(os.path.join(out_path, out_pickle), 'rb') as f:
+    if (out_path / out_pickle).exists():
+        with open(out_path / out_pickle, 'rb') as f:
             outs = pickle.load(f)
 
     data = np.genfromtxt(file, delimiter=",", dtype=type("x"))
     for i in range(0, data.shape[0], 8):
-        ii = int(i/8)
+        ii = i // 8
 
         if ii % 10 == 0:
-            print("processed {}/{}".format(i, data.shape[0]), flush=True)
+            print(f"processed {i}/{data.shape[0]}", flush=True)
 
         if ii < len(outs) and outs[ii][0] == file and outs[ii][1] == i:
-            print("Skipping {}, already done".format(i))
+            print(f"Skipping {i}, already done")
             continue
 
         if not session:
-            n_retry = 0
-            while n_retry < 5:
-                try:
-                    session = WolframLanguageSession(
-                        WolframKernel_path, stdout=sys.stdout)
-                    with open(mma_file, 'r') as f:
-                        script = f.read()
-                    session.evaluate(wlexpr(script))
-                    print("- mma file loaded", flush=True)
-                    n_retry = 10
-                except:
-                    print("failed to check license, retrying", flush=True)
-                    time.sleep(1)
-                    n_retry += 1
-            if n_retry != 10:
-                print("failed to check license, {} times, quitting!".format(
-                    n_retry), flush=True)
+            session = open_wolfram_language_session(WolframKernel_path)
+            if not session:
+                print("failed to open wolfram language session, quitting!", flush=True)
                 break
+            load_wolfram_script(session, mma_file)
 
         query = data[i:i+8, :].tolist()
         outm = session.evaluate(Global.roots(query))
         outs.append((file, i, outm))
 
-        with open(os.path.join(out_path, out_pickle), "wb") as fp:
+        with open(out_path / out_pickle, "wb") as fp:
             pickle.dump(outs, fp)
 
-    print("done {}/{}".format(k+1-loop_from, loop_to-loop_from), flush=True)
+    print(f"done {k + 1 - loop_from}/{loop_to - loop_from}", flush=True)
 
 if session:
     session.terminate()

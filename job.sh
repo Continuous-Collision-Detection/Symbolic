@@ -12,4 +12,4 @@ module load python/intel/3.8.6
 
 # Run job
 cd <path>
-python check_roots.py $1 $2 $3 $4 <mathematica-kernel> out <root-folder>
+python check_roots.py $1 $2 $3 $4 out <root-folder> --wolfram_kernel_path <mathematica-kernel>

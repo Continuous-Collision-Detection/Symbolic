@@ -5,7 +5,7 @@ roots[data_, outfile_ : ""] :=
          ts, te,
          tri, pts,
          sss, t, a, b, value, validRoots,
-         i, n, str, isComplex, result
+         i, n, str, isComplex, result, simpleSol
         },
 
         ps =  Table[Simplify[ToExpression[data[[1, i*2+1]]]/ToExpression[data[[1, i*2+2]]]],{i,0, 2}];
@@ -30,7 +30,7 @@ roots[data_, outfile_ : ""] :=
             Simplify[tri[[3]]==pts[[3]]],
             {t, a, b}];
         sss = Simplify[sss];
-        
+
         value = False;
         result = "";
         validRoots = {};
@@ -47,8 +47,23 @@ roots[data_, outfile_ : ""] :=
 
             value = Reduce[value];
 
-            If[value, 
-                AppendTo[validRoots, {"t"->t, "a"->a, "b"->b}/.sss[[i]]];
+            simpleSol = True;
+            If[value, Null;, Null;,
+                (* https://mathematica.stackexchange.com/q/188960 *)
+                value = RegionMeasure[
+                            ImplicitRegion[Reduce[{value, 0 <= t <= 1}, t], t], 
+                            Length[Flatten[{t}]]] > 0;
+                simpleSol = False;
+            ];
+            
+            If[value,
+                If[simpleSol,
+                    AppendTo[validRoots, {"t"->t, "a"->a, "b"->b}/.sss[[i]]];,
+                    AppendTo[validRoots, {
+                        "t"->First[Reduce[{Reduce[(a>=0 && b<=0 && a+b<=1)/.sss[[1]]], 0 <= t <= 1}, t]], 
+                        "a"->a, 
+                        "b"->b}/.sss[[i]]];
+                ];
             ];
             
             result = result <> ToString[value] <> "\n#####";

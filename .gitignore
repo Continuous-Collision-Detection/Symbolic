@@ -1,1 +1,3 @@
 roots.bin
+__pycache__
+out

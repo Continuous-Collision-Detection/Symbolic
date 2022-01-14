@@ -1,36 +1,37 @@
 import sys
 import pickle
 import subprocess
+import argparse
+import ast
 
-edge_edge = sys.argv[1] == 'True'
-n_jobs = int(sys.argv[2])
+parser = argparse.ArgumentParser()
+parser.add_argument("edge_edge", type=ast.literal_eval)
+parser.add_argument("n_jobs", type=int)
+parser.add_argument("start", type=int, default=0, nargs='?')
+parser.add_argument("n_files", type=int, default=-1, nargs='?')
+args = parser.parse_args()
 
-jname = "" if edge_edge else "vf"
+job_name = "" if args.edge_edge else "vf"
 
-log = "log" if edge_edge else "log_vf"
+log = "log" if args.edge_edge else "log_vf"
 
-file = "ee.pkl" if edge_edge else "vf.pkl"
+file = "ee.pkl" if args.edge_edge else "vf.pkl"
 
 with open(file, 'rb') as f:
     all_files = pickle.load(f)
 
+if args.n_files < 0:
+    args.n_files = len(all_files)
 
-if len(sys.argv) >= 5:
-    start = int(sys.argv[3])
-    n_files = int(sys.argv[4])
-else:
-    start = 0
-    n_files = len(all_files)
+delta = args.n_files // args.n_jobs
 
-delta = int(n_files/n_jobs)
-
-for i in range(start, n_files, delta):
+for i in range(args.start, args.n_files, delta):
     args = [
-        "sbatch", "-J", "{}{}".format(jname, i),
-        "-o", "{}/{}.out".format(log, i),
-        "-e", "{}/{}.err".format(log, i),
-         "job.sh",
-        file, str(i), str(i+delta), str(edge_edge)
+        "sbatch", "-J", f"{jobname}{i}",
+        "-o", f"{log}/{i}.out",
+        "-e", f"{log}/{i}.err",
+        "job.sh",
+        file, str(i), str(i+delta), str(args.edge_edge)
     ]
 
     # print(" ".join(args))

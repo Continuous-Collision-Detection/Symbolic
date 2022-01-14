@@ -1,42 +1,21 @@
-import os
 import sys
-import time
 
-import numpy
+from wolframclient.language import Global
 
-from wolframclient.evaluation import WolframLanguageSession
-from wolframclient.language import wl, wlexpr, Global
+from utils import *
 
-def open_session(WolframKernel_path, mma_file, max_retry=5):
-    for _ in range(max_retry):
-        try:
-            session = WolframLanguageSession(
-                WolframKernel_path, stdout=sys.stdout)
-            with open(mma_file, 'r') as f:
-                script = f.read()
-            session.evaluate(wlexpr(script))
-            print("- mma file loaded", flush=True)
-            return session
-        except:
-            print("- failed to check license, retrying", flush=True)
-            time.sleep(1)
-    return None
-
-def rules_to_dict(rules):
-    return dict(rule.args for rule in rules)
-
+WolframKernel_path = default_wolfram_kernel_path()
 if len(sys.argv) >= 2:
     WolframKernel_path = sys.argv[1]
-else:
-    WolframKernel_path = os.getenv('WOLFRAM_KERNEL')
-
 print(f"attempting to use {WolframKernel_path}")
 
-session = open_session(WolframKernel_path, "roots_vf.wl")
-
+session = open_wolfram_language_session(WolframKernel_path)
 if not session:
     print("failed to open mathematica!")
     exit(1)
+
+load_wolfram_script(session, "roots_vf.wl")
+load_wolfram_script(session, "compare_toi.wl")
 
 query = [
     [0, 1, -1, 1, 0, 1],
@@ -60,13 +39,24 @@ query = [
 #     ['2913215074912037', '9007199254740992', '5679403831262947', '4503599627370496', '6389336975038983', '18446744073709551616'],
 # ]
 
+# query = [
+#     ['1', '1', '1', '2', '0', '1'], 
+#     ['1', '1', '1287637463602197', '2251799813685248', '1', '1'], 
+#     ['1', '1', '5150549854408787', '9007199254740992', '-1592518156610665', '20282409603651670423947251286016'], 
+#     ['1', '1', '3539437277287445', '2251799813685248', '9007199254740991', '9007199254740992'], 
+#     ['1', '1', '1', '2', '0', '1'], 
+#     ['1', '1', '5001272674527231', '18014398509481984', '9007199254740991', '9007199254740992'], 
+#     ['1', '1', '5001272674527227', '18014398509481984', '-18138484381021', '10141204801825835211973625643008'], 
+#     ['1', '1', '11238120695317', '8796093022208', '9007199254740991', '9007199254740992']
+# ]
+
 result = session.evaluate(Global.roots(query, "roots.bin"))
 print(result)
-session.terminate()
 
-session = open_session(WolframKernel_path, "compare_vf_toi.wl")
-results = rules_to_dict(session.evaluate(Global.compareToI("roots.bin", 0.49)))
+# results = rules_to_dict(session.evaluate(Global.compareToI("roots.bin", 0.49)))
 # results = rules_to_dict(session.evaluate(Global.compareToI("roots.bin", 0.243923)))
+results = rules_to_dict(session.evaluate(Global.compareToI("roots.bin", 0)))
 print(results)
+
 session.terminate()
 
