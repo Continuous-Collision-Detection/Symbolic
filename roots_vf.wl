@@ -70,8 +70,7 @@ roots[data_, outfile_ : ""] :=
         ];
 
         If[Length[validRoots] > 0 && outfile != "",
-            BinaryWrite[outfile, BinarySerialize[validRoots]];
-            Close[outfile];
+            Export[outfile, validRoots];
         ];
         
         Return[result];

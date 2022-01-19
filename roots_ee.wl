@@ -81,11 +81,11 @@ roots[data_, outfile_ : ""] :=
             
             If[value,
                 If[simpleSol,
-                    AppendTo[validRoots, {"t"->t, "a"->a, "b"->b}/.sss[[i]]];,
+                    AppendTo[validRoots, {"t"->t, "a"->la, "b"->lb}/.sss[[i]]];,
                     AppendTo[validRoots, {
                         "t"->First[Reduce[{Reduce[(la >= 0 && la <= 1 && lb >= 0 && lb <= 1)/.sss[[1]]], 0 <= t <= 1}, t]], 
-                        "a"->a, 
-                        "b"->b}/.sss[[i]]];
+                        "a"->la, 
+                        "b"->lb}/.sss[[i]]];
                 ];
             ];
 
@@ -93,8 +93,7 @@ roots[data_, outfile_ : ""] :=
         ];
 
         If[Length[validRoots] > 0 && outfile != "",
-            BinaryWrite[outfile, BinarySerialize[validRoots]];
-            Close[outfile];
+            Export[outfile, validRoots];
         ];
 
         Return[result];

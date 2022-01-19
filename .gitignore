@@ -1,3 +1,6 @@
-roots.bin
 __pycache__
-out
+log_ee
+log_vf
+output.txt
+roots.bin
+roots.mx

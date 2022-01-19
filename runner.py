@@ -27,7 +27,7 @@ delta = args.n_files // args.n_jobs
 
 for i in range(args.start, args.n_files, delta):
     args = [
-        "sbatch", "-J", f"{jobname}{i}",
+        "sbatch", "-J", f"{job_name}{i}",
         "-o", f"{log}/{i}.out",
         "-e", f"{log}/{i}.err",
         "job.sh",
