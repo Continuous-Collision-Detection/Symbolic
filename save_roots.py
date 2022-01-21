@@ -50,6 +50,14 @@ def main():
         # root_out_dir = args.out_path / csv.parent.relative_to(args.queries_root)
         root_out_dir = csv.parents[1] / "roots"
         root_out_dir.mkdir(parents=True, exist_ok=True)
+
+        tar_output = root_out_dir / (csv.stem + '_roots.tar')
+        if tar_output.exists():
+            continue # assumes these queries have been processed successfully
+
+        working_dir = pathlib.Path(os.getenv("SLURM_TMPDIR"))
+        if not working_dir.exists():
+            working_dir = root_out_dir
         
         data = numpy.genfromtxt(csv, delimiter=",", dtype=str)
         assert(data.shape[0] % 8 == 0)
@@ -71,7 +79,7 @@ def main():
             if collides[i // 8]:
                 query = data[i:i+8, :6].tolist()
                 roots_filename = (
-                    root_out_dir / (csv.stem + f"_q{i//8}_roots.bin")
+                    working_dir / (csv.stem + f"_q{i//8}_roots.mx")
                 ).resolve()
                 root_files.append(roots_filename)
                 if roots_filename.exists():
@@ -83,18 +91,21 @@ def main():
 
         # TAR up the root binary files to avoid using my # files quota on HPC
         root_files = list(filter(lambda p: p.exists(), root_files))
-        print(f"creating {root_out_dir / (csv.stem + '_roots.tar')}")
-        make_tarfile(root_out_dir / (csv.stem + "_roots.tar"), root_files)
+        print(f"creating {tar_output}")
+        make_tarfile(tar_output, root_files)
         for f in root_files:
             f.unlink() # delete file
         
 
 if __name__ == "__main__":
     session = None
+    success = True
     try:
         main()
-    except:
+    except Exception as e:
         traceback.print_exc()
+        success = False
     finally:
         if session:
             session.terminate()
+    exit(int(success))

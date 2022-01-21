@@ -2,8 +2,18 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=24:00:00
+#SBATCH --time=96:00:00
 #SBATCH --mem=8GB
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zfergus@nyu.edu
+
+# exit when any command fails
+set -e
+
+# keep track of the last executed command
+trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+# echo an error message before exiting
+trap 'echo "\"${last_command}\" command failed with exit code $?."' EXIT
 
 # Load modules
 module purge
