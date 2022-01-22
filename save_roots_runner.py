@@ -10,7 +10,7 @@ from natsort import natsorted, ns
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i,--input", dest="all_files", type=pathlib.Path, nargs="+")
-parser.add_argument("edge_edge", type=ast.literal_eval)
+parser.add_argument("--ee,--edge_edge", dest="edge_edge", type=ast.literal_eval)
 parser.add_argument("n_jobs", type=int)
 args = parser.parse_args()
 
@@ -38,4 +38,5 @@ for i in range(args.n_jobs):
 
     # print(" ".join(sbatch_args))
 
-    subprocess.run(sbatch_args)
+    if len(files) > 0:
+        subprocess.run(sbatch_args)

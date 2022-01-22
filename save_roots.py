@@ -17,8 +17,18 @@ def make_tarfile(tar_filename, sources):
         for source in sources:
             tar.add(source, arcname=source.name)
 
+def init_session(args):
+    print("initializing wolfram language session")
+    session = open_wolfram_language_session(args.wolfram_kernel_path)
+    if not session:
+        print("failed to open mathematica!")
+        exit(1)
+    load_wolfram_script(
+        session, "roots_ee.wl" if args.edge_edge else "roots_vf.wl")
+    return session
+
 def main():
-    global session
+    session = None
 
     parser = argparse.ArgumentParser()
     # parser.add_argument("queries_root", type=pathlib.Path)
@@ -32,15 +42,6 @@ def main():
 
     args = parser.parse_args()
 
-    session = open_wolfram_language_session(args.wolfram_kernel_path)
-
-    if not session:
-        print("failed to open mathematica!")
-        exit(1)
-
-    load_wolfram_script(
-        session, "roots_ee.wl" if args.edge_edge else "roots_vf.wl")
-
     # for csv in args.queries_root.glob("*/vertex-face/*.csv"):
     # for csv in args.queries_root.glob(
     #         f"*/queries/*{'ee' if args.edge_edge else 'vf'}.csv"):
@@ -50,10 +51,6 @@ def main():
         # root_out_dir = args.out_path / csv.parent.relative_to(args.queries_root)
         root_out_dir = csv.parents[1] / "roots"
         root_out_dir.mkdir(parents=True, exist_ok=True)
-
-        tar_output = root_out_dir / (csv.stem + '_roots.tar')
-        if tar_output.exists():
-            continue # assumes these queries have been processed successfully
 
         working_dir = pathlib.Path(os.getenv("SLURM_TMPDIR"))
         if not working_dir.exists():
@@ -75,6 +72,18 @@ def main():
 
         root_files = []
 
+        tar_output = root_out_dir / (csv.stem + '_roots.tar')
+        if tar_output.exists():
+            # extract existing roots files so they can be easily skipped later
+            with tarfile.open(tar_output, "r") as tar:
+                if len(tar.getnames()) == sum(collides):
+                    print(f"complete results exist: {tar_output}")
+                    continue
+                tar.extractall(working_dir)
+
+        if session is None:
+            session = init_session(args)
+
         for i in tqdm(range(0, data.shape[0], 8)):
             if collides[i // 8]:
                 query = data[i:i+8, :6].tolist()
@@ -95,17 +104,19 @@ def main():
         make_tarfile(tar_output, root_files)
         for f in root_files:
             f.unlink() # delete file
+
+        return session
         
 
 if __name__ == "__main__":
     session = None
     success = True
     try:
-        main()
+        session = main()
     except Exception as e:
         traceback.print_exc()
         success = False
     finally:
         if session:
             session.terminate()
-    exit(int(success))
+    exit(int(not success))
