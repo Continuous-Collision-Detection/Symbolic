@@ -1,9 +1,13 @@
 __pycache__
-log_ee
-log_vf
+log*
 output.txt
 roots.bin
 roots.mx
 data
 output_ee.txt
 output_vf.txt
+*.npz
+*.zip
+*.tar.gz
+*.png
+*.pdf

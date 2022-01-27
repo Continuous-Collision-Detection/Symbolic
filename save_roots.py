@@ -52,8 +52,12 @@ def main():
         root_out_dir = csv.parents[1] / "roots"
         root_out_dir.mkdir(parents=True, exist_ok=True)
 
-        working_dir = pathlib.Path(os.getenv("SLURM_TMPDIR"))
-        if not working_dir.exists():
+        working_dir = os.getenv("SLURM_TMPDIR")
+        if working_dir is not None:
+            working_dir = pathlib.Path(working_dir)
+            if not working_dir.exists():
+                working_dir = root_out_dir
+        else:
             working_dir = root_out_dir
         
         data = numpy.genfromtxt(csv, delimiter=",", dtype=str)
@@ -105,7 +109,7 @@ def main():
         for f in root_files:
             f.unlink() # delete file
 
-        return session
+    return session
         
 
 if __name__ == "__main__":

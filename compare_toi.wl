@@ -1,6 +1,8 @@
-compareToI[rootsFilename_, toi_] := 
-    Module[{valid, minDiff, t},
+compareToI[rootsFilename_, toiNumerator_, toiDenominator_] := 
+    Module[{valid, minDiff, t, toi},
         roots = Import[rootsFilename];
+
+        toi = Simplify[ToExpression[toiNumerator] / ToExpression[toiDenominator]];
 
         valid = True;
         minT = Infinity;
