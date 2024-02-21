@@ -9,7 +9,8 @@ import math
 from natsort import natsorted, ns
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-i,--input", dest="all_files", type=pathlib.Path, nargs="+")
+parser.add_argument("-i,--input", dest="all_files",
+                    type=pathlib.Path, nargs="+")
 parser.add_argument("n_jobs", type=int)
 args = parser.parse_args()
 

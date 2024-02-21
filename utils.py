@@ -6,6 +6,7 @@ import time
 from wolframclient.evaluation import WolframLanguageSession
 from wolframclient.language import wl, wlexpr, Global
 
+
 def default_wolfram_kernel_path():
     paths = [
         pathlib.Path(os.getenv("WOLFRAM_KERNEL")),
@@ -15,6 +16,7 @@ def default_wolfram_kernel_path():
         if p.exists():
             return str(p)
     return None
+
 
 def open_wolfram_language_session(WolframKernel_path, max_retry=5):
     for _ in range(max_retry):
@@ -27,10 +29,12 @@ def open_wolfram_language_session(WolframKernel_path, max_retry=5):
             time.sleep(1)
     return None
 
+
 def load_wolfram_script(session, script_path):
-        with open(script_path, 'r') as f:
-            script = f.read()
-        session.evaluate(wlexpr(script))
+    with open(script_path, 'r') as f:
+        script = f.read()
+    session.evaluate(wlexpr(script))
+
 
 def rules_to_dict(rules):
     return dict(rule.args for rule in rules)

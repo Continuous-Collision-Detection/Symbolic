@@ -1,4 +1,5 @@
-"""Script to batch process many queries
+"""
+Script to batch process many queries
 input arguments:
 - picked file containing the list pairs pointing to the folder and infile
 - start index to process
@@ -27,17 +28,17 @@ from utils import *
 
 parser = argparse.ArgumentParser(
     description="""
-        Script to batch process many queries. 
-        For every file in the range it generates 
+        Script to batch process many queries.
+        For every file in the range it generates
         "out_path/tmp_<vf|ee>/out_<folder>_<infile>.pkl", which contains a list of tuples (file, i, collision).""",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("file_data")
 parser.add_argument("loop_from", type=int)
 parser.add_argument("loop_to", type=int)
 parser.add_argument("edge_edge", type=ast.literal_eval)
-parser.add_argument("--wolfram_kernel_path", 
+parser.add_argument("--wolfram_kernel_path",
                     dest="WolframKernel_path",
-                    default=default_wolfram_kernel_path(), 
+                    default=default_wolfram_kernel_path(),
                     help=f"path to Wolfram kernel")
 parser.add_argument("out_path", type=pathlib.Path)
 parser.add_argument("root_path", type=pathlib.Path)

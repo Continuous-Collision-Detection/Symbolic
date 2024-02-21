@@ -13,13 +13,15 @@ from wolframclient.language import Global
 
 from utils import *
 
+
 def main():
     global session
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i,--input", dest="input", nargs="+", type=pathlib.Path)
-    parser.add_argument("--wolfram_kernel_path", 
-                        default=default_wolfram_kernel_path(), 
+    parser.add_argument("-i,--input", dest="input",
+                        nargs="+", type=pathlib.Path)
+    parser.add_argument("--wolfram_kernel_path",
+                        default=default_wolfram_kernel_path(),
                         help=f"path to Wolfram kernel")
 
     args = parser.parse_args()
@@ -38,13 +40,15 @@ def main():
         if not working_dir.exists():
             working_dir = tar_file.parent
 
-        tois_csv = (tar_file.parents[1] / "toi" / (tar_file.stem.split("_")[0] + ".csv"))
-        tois = numpy.genfromtxt(tois_csv, delimiter=",", dtype=str).reshape(-1, 2)
+        tois_csv = (tar_file.parents[1] / "toi" /
+                    (tar_file.stem.split("_")[0] + ".csv"))
+        tois = numpy.genfromtxt(tois_csv, delimiter=",",
+                                dtype=str).reshape(-1, 2)
 
         with tarfile.open(tar_file, "r") as tar:
             tar.extractall(working_dir)
             names = tar.getnames()
-            
+
         for name in tqdm(names):
             roots_path = working_dir / name
 
@@ -54,13 +58,13 @@ def main():
                 results = rules_to_dict(session.evaluate(
                     Global.compareToI(str(roots_path), toi[0], toi[1])))
                 results["diff"] = float(results["diff"])
-            except: 
+            except:
                 print(f"{name} failed")
                 continue
             output[str(int(name.split("_")[1][1:]))] = results
 
-            roots_path.unlink() # delete roots file
-        
+            roots_path.unlink()  # delete roots file
+
         # valid = all([r["valid"] for k, r in output.items()])
         # diffs = numpy.array([r["diff"] for k, r in output.items()])
         # print("valid={} min_diff={} max_diff={} avg_diff={} stddev_diff={} median_diff={}".format(
@@ -68,9 +72,11 @@ def main():
 
         toi_comparison_dir = tar_file.parents[1] / "toi_comparison"
         toi_comparison_dir.mkdir(parents=True, exist_ok=True)
-        json_path = toi_comparison_dir / (tar_file.name.split("_")[0] + ".json")
+        json_path = toi_comparison_dir / \
+            (tar_file.name.split("_")[0] + ".json")
         with open(json_path, 'w') as f:
             json.dump(output, f, separators=(',', ':'))
+
 
 if __name__ == "__main__":
     session = None
@@ -84,4 +90,3 @@ if __name__ == "__main__":
         if session:
             session.terminate()
     exit(int(not success))
-

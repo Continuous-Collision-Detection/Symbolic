@@ -8,6 +8,7 @@ import numpy
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+
 def plot_bar_with_outliers(datas, names):
     start = 1e-10
     # end = data.max() / 2
@@ -17,7 +18,7 @@ def plot_bar_with_outliers(datas, names):
     # Making a histogram
     # largest_value = data.max()
     # bins = numpy.geomspace(start, largest_value, nbins).tolist() #+ [largest_value]
-    bins = numpy.geomspace(start, end, nbins).tolist() #+ [largest_value]
+    bins = numpy.geomspace(start, end, nbins).tolist()  # + [largest_value]
     bins = [0] + bins
     # assert(data.min() > 0)
     # bins = [start]
@@ -49,7 +50,7 @@ def plot_bar_with_outliers(datas, names):
         else:
             labels.append('> {:.0e}'.format(i))
 
-    # Plotting the graph 
+    # Plotting the graph
     rows, cols = 1, 5
     fig = make_subplots(rows=1, cols=5, shared_yaxes=True)
 
@@ -102,6 +103,7 @@ def plot_bar_with_outliers(datas, names):
 
     return fig
 
+
 def main():
     name_map = {
         "arma_roller_FCR_E5e5_4coreDeskMinchen": "Armadillo-Roller",
@@ -112,7 +114,8 @@ def main():
     }
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i,--input", dest="input", nargs="+", type=pathlib.Path)
+    parser.add_argument("-i,--input", dest="input",
+                        nargs="+", type=pathlib.Path)
     args = parser.parse_args()
 
     valid = True
@@ -142,6 +145,6 @@ def main():
     fig = plot_bar_with_outliers(diffs, names)
     fig.write_image("toi_compare.pdf")
 
+
 if __name__ == "__main__":
     main()
-

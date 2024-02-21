@@ -3,6 +3,7 @@ log*
 output.txt
 roots.bin
 roots.mx
+roots.wxf
 data
 output_ee.txt
 output_vf.txt

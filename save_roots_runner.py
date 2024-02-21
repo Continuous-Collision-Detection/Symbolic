@@ -9,8 +9,10 @@ import math
 from natsort import natsorted, ns
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-i,--input", dest="all_files", type=pathlib.Path, nargs="+")
-parser.add_argument("--ee,--edge_edge", dest="edge_edge", type=ast.literal_eval)
+parser.add_argument("-i,--input", dest="all_files",
+                    type=pathlib.Path, nargs="+")
+parser.add_argument("--ee,--edge_edge", dest="edge_edge",
+                    type=ast.literal_eval)
 parser.add_argument("n_jobs", type=int)
 args = parser.parse_args()
 
@@ -32,7 +34,7 @@ for i in range(args.n_jobs):
     sbatch_args = [
         "sbatch", "-J", f"{job_name}{i}",
         "-o", f"{log}/{i}.out", "-e", f"{log}/{i}.err",
-        "save_roots_job.sh", str(args.edge_edge), 
+        "save_roots_job.sh", str(args.edge_edge),
         " ".join(str(f.resolve()) for f in files)
     ]
 

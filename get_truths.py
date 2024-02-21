@@ -28,6 +28,6 @@ for suffix in suffixes:
 
     with open("truths{}.pkl".format(suffix), "wb") as fp:
         pickle.dump(results, fp)
-        
+
     df = pd.DataFrame(results, columns=['i', 'file', 'experiemnt', "intersects"])
     df.to_csv("truths{}.csv".format(suffix))

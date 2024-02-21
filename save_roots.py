@@ -12,10 +12,12 @@ from wolframclient.language import Global
 
 from utils import *
 
+
 def make_tarfile(tar_filename, sources):
     with tarfile.open(tar_filename, "w") as tar:
         for source in sources:
             tar.add(source, arcname=source.name)
+
 
 def init_session(args):
     print("initializing wolfram language session")
@@ -27,17 +29,19 @@ def init_session(args):
         session, "roots_ee.wl" if args.edge_edge else "roots_vf.wl")
     return session
 
+
 def main():
     session = None
 
     parser = argparse.ArgumentParser()
     # parser.add_argument("queries_root", type=pathlib.Path)
-    parser.add_argument("-i,--input", dest="input", nargs="+", type=pathlib.Path)
+    parser.add_argument("-i,--input", dest="input",
+                        nargs="+", type=pathlib.Path)
     parser.add_argument("edge_edge", type=ast.literal_eval)
-    parser.add_argument("-o,--out_path", dest="out_path", 
+    parser.add_argument("-o,--out_path", dest="out_path",
                         default=pathlib.Path("out"), type=pathlib.Path)
-    parser.add_argument("--wolfram_kernel_path", 
-                        default=default_wolfram_kernel_path(), 
+    parser.add_argument("--wolfram_kernel_path",
+                        default=default_wolfram_kernel_path(),
                         help=f"path to Wolfram kernel")
 
     args = parser.parse_args()
@@ -59,15 +63,15 @@ def main():
                 working_dir = root_out_dir
         else:
             working_dir = root_out_dir
-        
+
         data = numpy.genfromtxt(csv, delimiter=",", dtype=str)
-        assert(data.shape[0] % 8 == 0)
+        assert (data.shape[0] % 8 == 0)
         if data.shape[1] > 6:
             collides = data[::8, -1].astype(bool)
-        else: 
+        else:
             bools_path = (
                 csv.parents[1] / "mma_bool" / (csv.stem + "_mma_bool.json"))
-            assert(bools_path.exists())
+            assert (bools_path.exists())
             with open(bools_path) as f:
                 collides = numpy.array(json.load(f))
         if data.shape[0] // 8 != collides.shape[0]:
@@ -92,25 +96,25 @@ def main():
             if collides[i // 8]:
                 query = data[i:i+8, :6].tolist()
                 roots_filename = (
-                    working_dir / (csv.stem + f"_q{i//8}_roots.mx")
+                    working_dir / (csv.stem + f"_q{i//8}_roots.wxf")
                 ).resolve()
                 root_files.append(roots_filename)
                 if roots_filename.exists():
-                    continue # assumes this query has been processed successfully
+                    continue  # assumes this query has been processed successfully
                 result = session.evaluate(
                     Global.roots(query, str(roots_filename)))
                 # print(result)
-                assert("True" in result)
+                assert ("True" in result)
 
         # TAR up the root binary files to avoid using my # files quota on HPC
         root_files = list(filter(lambda p: p.exists(), root_files))
         print(f"creating {tar_output}")
         make_tarfile(tar_output, root_files)
         for f in root_files:
-            f.unlink() # delete file
+            f.unlink()  # delete file
 
     return session
-        
+
 
 if __name__ == "__main__":
     session = None

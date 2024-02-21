@@ -12,7 +12,7 @@ for p in tqdm(list(scene_path.glob("tpq/*.json"))):
             ee_mma_bools = json.load(f)
     else:
         ee_mma_bools = []
-    
+
     bools_path = scene_path / "mma_bool" / (p.stem + f"vf_mma_bool.json")
     if bools_path.exists():
         with open(bools_path) as f:
@@ -29,21 +29,21 @@ for p in tqdm(list(scene_path.glob("tpq/*.json"))):
         if no_collisions:
             continue
         print(p, no_collisions)
-    
+
     toi_per_query = {(int(q[0]), int(q[1])): q[2:] for q in toi_per_query}
-    
+
     with open(scene_path / "boxes" / (p.stem + "ee.json")) as f:
         ee_pairs = json.load(f)
         ee_pairs = [tuple(pair) for pair in ee_pairs]
-    if(len(ee_pairs) != len(ee_mma_bools)):
-        assert(len(ee_mma_bools) == 0)
+    if (len(ee_pairs) != len(ee_mma_bools)):
+        assert (len(ee_mma_bools) == 0)
         ee_mma_bools = [False] * len(ee_pairs)
 
     with open(scene_path / "boxes" / (p.stem + "vf.json")) as f:
         vf_pairs = json.load(f)
         vf_pairs = [tuple(pair) for pair in vf_pairs]
-    if(len(vf_pairs) != len(vf_mma_bools)):
-        assert(len(vf_mma_bools) == 0)
+    if (len(vf_pairs) != len(vf_mma_bools)):
+        assert (len(vf_mma_bools) == 0)
         vf_mma_bools = [False] * len(vf_pairs)
 
     missing = 0
@@ -57,7 +57,7 @@ for p in tqdm(list(scene_path.glob("tpq/*.json"))):
         else:
             missing += ee_mma_bools[len(ee_tois)]
             ee_tois.append(["1", "1"])
-    
+
     vf_tois = []
     for vf_pair in vf_pairs:
         if vf_pair in toi_per_query:
