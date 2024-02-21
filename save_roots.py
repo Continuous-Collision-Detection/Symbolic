@@ -14,7 +14,7 @@ from utils import *
 
 
 def make_tarfile(tar_filename, sources):
-    with tarfile.open(tar_filename, "w") as tar:
+    with tarfile.open(tar_filename, "w:gz") as tar:
         for source in sources:
             tar.add(source, arcname=source.name)
 
@@ -80,10 +80,10 @@ def main():
 
         root_files = []
 
-        tar_output = root_out_dir / (csv.stem + '_roots.tar')
+        tar_output = root_out_dir / (csv.stem + '_roots.tar.gz')
         if tar_output.exists():
             # extract existing roots files so they can be easily skipped later
-            with tarfile.open(tar_output, "r") as tar:
+            with tarfile.open(tar_output, "r:gz") as tar:
                 if len(tar.getnames()) == sum(collides):
                     print(f"complete results exist: {tar_output}")
                     continue
