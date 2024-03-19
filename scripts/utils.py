@@ -4,18 +4,23 @@ import pathlib
 import time
 
 from wolframclient.evaluation import WolframLanguageSession
-from wolframclient.language import wl, wlexpr, Global
+from wolframclient.language import wlexpr
 
 
 def default_wolfram_kernel_path():
-    paths = [
-        pathlib.Path(os.getenv("WOLFRAM_KERNEL")),
-        pathlib.Path("/share/apps/mathematica/12.1.1/bin/wolfram"),
-    ]
+    paths = []
+    WOLFRAM_KERNEL = os.getenv("WOLFRAM_KERNEL")
+    if WOLFRAM_KERNEL:
+        paths.append(pathlib.Path(WOLFRAM_KERNEL))
+    paths.append(pathlib.Path("/share/apps/mathematica/12.1.1/bin/wolfram"))
+    paths.append(pathlib.Path(
+        "/Applications/Mathematica.app/Contents/MacOS/wolfram"))
+
     for p in paths:
         if p.exists():
             return str(p)
-    return None
+
+    raise Exception("no mathematica kernel found!")
 
 
 def open_wolfram_language_session(WolframKernel_path, max_retry=5):

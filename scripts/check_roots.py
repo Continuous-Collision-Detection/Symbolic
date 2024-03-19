@@ -12,10 +12,7 @@ input arguments:
 for every file in the range it generate "out_path/tmp_<vf|ee>/out_<folder>_<infile>.pkl", which contains a list of tuples (file, i, collision)
 """
 import numpy as np
-import subprocess
 import pickle
-from shutil import copyfile
-import time
 import argparse
 import pathlib
 import ast
@@ -27,10 +24,10 @@ from utils import *
 ################################################################################
 
 parser = argparse.ArgumentParser(
-    description="""
-        Script to batch process many queries.
-        For every file in the range it generates
-        "out_path/tmp_<vf|ee>/out_<folder>_<infile>.pkl", which contains a list of tuples (file, i, collision).""",
+    description="""\
+Script to batch process many queries.
+For every file in the range it generates
+"out_path/tmp_<vf|ee>/out_<folder>_<infile>.pkl", which contains a list of tuples (file, i, collision).""",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("file_data")
 parser.add_argument("loop_from", type=int)

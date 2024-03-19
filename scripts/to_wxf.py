@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Convert .mx files to .wxf files using Mathematica."""
 
 import argparse
 import shutil

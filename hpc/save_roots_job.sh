@@ -13,5 +13,7 @@ module load mathematica/12.1.1
 module load python/intel/3.8.6
 
 # Run job
-cd /home/zjf214/symbolic-ccd
-python compare_toi.py -i $@
+cd $HOME/symbolic-ccd
+EDGE_EDGE=$1
+shift
+python scripts/save_roots.py ${EDGE_EDGE} -i $@

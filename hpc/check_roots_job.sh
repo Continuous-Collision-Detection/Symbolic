@@ -11,5 +11,5 @@ module load mathematica/12.1.1
 module load python/intel/3.8.6
 
 # Run job
-cd <path>
-python check_roots.py $1 $2 $3 $4 out <root-folder> --wolfram_kernel_path <mathematica-kernel>
+cd $HOME/symbolic-ccd
+python scripts/check_roots.py $1 $2 $3 $4 out <root-folder> --wolfram_kernel_path <mathematica-kernel>

@@ -1,17 +1,18 @@
+import pathlib
 import sys
 import traceback
 
 from wolframclient.language import Global
 
-from utils import *
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
+from utils import *  # noqa
 
 
 def main():
     global session
 
-    WolframKernel_path = default_wolfram_kernel_path()
-    if len(sys.argv) >= 2:
-        WolframKernel_path = sys.argv["1"]
+    WolframKernel_path = (default_wolfram_kernel_path()
+                          if len(sys.argv) < 2 else sys.argv[1])
     print(f"attempting to use {WolframKernel_path}")
 
     session = open_wolfram_language_session(WolframKernel_path)
@@ -19,8 +20,9 @@ def main():
         print("failed to open mathematica!")
         exit(1)
 
-    load_wolfram_script(session, "roots_vf.wl")
-    load_wolfram_script(session, "compare_toi.wl")
+    src_dir = pathlib.Path(__file__).resolve().parents[1] / "src"
+    load_wolfram_script(session, src_dir / "roots_vf.wl")
+    load_wolfram_script(session, src_dir / "compare_toi.wl")
 
     # query = [
     #     ["0", "1", "-1", "1", "0", "1"],
@@ -70,10 +72,10 @@ def main():
     print(results)
     assert ("True" in results)
 
-    # results = rules_to_dict(session.evaluate(Global.compareToI("roots.wxf", 0.49)))
-    # results = rules_to_dict(session.evaluate(Global.compareToI("roots.wxf", 0.243923)))
+    # results = rules_to_dict(session.evaluate(Global.compareToI("roots.wxf", 49, 100)))
+    # results = rules_to_dict(session.evaluate(Global.compareToI("roots.wxf", 243923, 1000000)))
     results = rules_to_dict(session.evaluate(
-        Global.compareToI("roots.wxf", 0)))
+        Global.compareToI("roots.wxf", 0, 1)))
     print(results)
 
 

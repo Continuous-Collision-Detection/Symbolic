@@ -5,6 +5,7 @@ roots.bin
 roots.mx
 roots.wxf
 data
+!tests/data
 output_ee.txt
 output_vf.txt
 *.npz
@@ -13,3 +14,4 @@ output_vf.txt
 *.png
 *.pdf
 *_roots.wxf
+.DS_Store

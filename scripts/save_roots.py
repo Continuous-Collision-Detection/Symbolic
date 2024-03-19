@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+"""Save the roots for already processed queries to a tar.gz file."""
+
 import argparse
 import pathlib
 import ast
@@ -26,23 +29,22 @@ def init_session(args):
         print("failed to open mathematica!")
         exit(1)
     load_wolfram_script(
-        session, "roots_ee.wl" if args.edge_edge else "roots_vf.wl")
+        session, pathlib.Path(__file__).resolve().parents[1] / "src" / ("roots_ee.wl" if args.edge_edge else "roots_vf.wl"))
     return session
 
 
 def main():
     session = None
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Save the roots for already processed queries to a tar.gz file.")
     # parser.add_argument("queries_root", type=pathlib.Path)
     parser.add_argument("-i,--input", dest="input",
                         nargs="+", type=pathlib.Path)
     parser.add_argument("edge_edge", type=ast.literal_eval)
-    parser.add_argument("-o,--out_path", dest="out_path",
-                        default=pathlib.Path("out"), type=pathlib.Path)
     parser.add_argument("--wolfram_kernel_path",
                         default=default_wolfram_kernel_path(),
-                        help=f"path to Wolfram kernel")
+                        help=f"path to Wolfram kernel (default: \"{default_wolfram_kernel_path()}\")")
 
     args = parser.parse_args()
 
@@ -52,7 +54,6 @@ def main():
     for csv in args.input:
         print(csv)
 
-        # root_out_dir = args.out_path / csv.parent.relative_to(args.queries_root)
         root_out_dir = csv.parents[1] / "roots"
         root_out_dir.mkdir(parents=True, exist_ok=True)
 
