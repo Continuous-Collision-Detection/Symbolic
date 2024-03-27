@@ -80,15 +80,15 @@ def main():
         bf = ipctk.BruteForce()
         bf.build(mesh_t0.points, mesh_t1.points, E, F)
 
+        boxes = vf_boxes(mesh_t0, mesh_t1, bf)
         with open(boxes_dir / f"{i}vf.json", "w") as f:
-            boxes = vf_boxes(mesh_t0, mesh_t1, bf)
             if boxes:
                 json.dump(boxes, f, separators=(",", ":"))
             else:
                 f.write("[]")
 
+        boxes = ee_boxes(mesh_t0, mesh_t1, bf)
         with open(boxes_dir / f"{i}ee.json", "w") as f:
-            boxes = ee_boxes(mesh_t0, mesh_t1, bf)
             if boxes:
                 json.dump(boxes, f, separators=(",", ":"))
             else:
