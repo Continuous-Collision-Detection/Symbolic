@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
+"""Compare TOIs using Wolfram Mathematica."""
+
 import argparse
 import pathlib
-import ast
 import json
 import traceback
 from tqdm import tqdm
@@ -17,7 +19,8 @@ from utils import *
 def main():
     global session
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Compare TOIs using Wolfram Mathematica.")
     parser.add_argument("-i,--input", dest="input",
                         nargs="+", type=pathlib.Path)
     parser.add_argument("--wolfram_kernel_path",
@@ -30,7 +33,8 @@ def main():
     if not session:
         print("failed to open mathematica!")
         exit(1)
-    load_wolfram_script(session, "compare_toi.wl")
+    load_wolfram_script(
+        session, pathlib.Path(__file__).resolve().parents[1] / "src" / "compare_toi.wl")
 
     for tar_file in args.input:
         print(tar_file)

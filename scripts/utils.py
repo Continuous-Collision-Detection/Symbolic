@@ -1,3 +1,5 @@
+"""Wolfram Language utilities."""
+
 import os
 import sys
 import pathlib
