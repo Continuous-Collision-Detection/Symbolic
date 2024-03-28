@@ -1,6 +1,7 @@
 import sys
 import json
 import meshio
+import gmpy2
 
 sys.path.append(
     "/Users/zachary/Development/research/contact/ipc-toolkit/build/release/python")
@@ -54,6 +55,40 @@ def ee_boxes(mesh_t0, mesh_t1, bf):
     return sorted(boxes)
 
 
+def generate_rational_queries(mesh_t0, mesh_t1, boxes, path):
+    nV = len(mesh_t0.points)
+    F = mesh_t0.cells_dict["triangle"]
+    E = ipctk.edges(F)
+
+    lines = []
+    for box in boxes:
+        if box[1] > nV + len(E):  # is a vertex-face box
+            assert box[0] < nV
+            fid = box[1] - nV - len(E)
+            vertex_ids = [box[0], F[fid][0], F[fid][1], F[fid][2]]
+        else:  # is an edge-edge box
+            assert nV <= box[0] < nV + len(E)  # noqa
+            assert nV <= box[1] < nV + len(E)  # noqa
+            eaid = box[0] - nV
+            ebid = box[1] - nV
+            vertex_ids = [E[eaid][0], E[eaid][1], E[ebid][0], E[ebid][1]]
+
+        for mesh in (mesh_t0, mesh_t1):
+            rational_vertices = [
+                [gmpy2.mpq(x) for x in point] for point in mesh.points]
+            for vid in vertex_ids:
+                lines.append("{},{},{},{},{},{}".format(
+                    str(rational_vertices[vid][0].numerator),
+                    str(rational_vertices[vid][0].denominator),
+                    str(rational_vertices[vid][1].numerator),
+                    str(rational_vertices[vid][1].denominator),
+                    str(rational_vertices[vid][2].numerator),
+                    str(rational_vertices[vid][2].denominator)))
+
+    with open(path, "w") as f:
+        f.write("\n".join(lines))
+
+
 def main():
     import argparse
     import natsort
@@ -68,7 +103,11 @@ def main():
     boxes_dir = args.frames.parent / "boxes"
     boxes_dir.mkdir(exist_ok=True)
 
-    frames = natsort.natsorted(args.frames.glob("*"))
+    query_dir = args.frames.parent / "queries"
+    query_dir.mkdir(exist_ok=True)
+
+    frames = natsort.natsorted(list(
+        filter(lambda p: p.name != ".DS_Store", args.frames.glob("*"))))
 
     for i in tqdm(range(len(frames) - 1)):
         mesh_t0 = meshio.read(frames[i])
@@ -80,19 +119,43 @@ def main():
         bf = ipctk.BruteForce()
         bf.build(mesh_t0.points, mesh_t1.points, E, F)
 
-        boxes = vf_boxes(mesh_t0, mesh_t1, bf)
-        with open(boxes_dir / f"{i}vf.json", "w") as f:
-            if boxes:
-                json.dump(boxes, f, separators=(",", ":"))
-            else:
-                f.write("[]")
+        # Vertex-Face
 
-        boxes = ee_boxes(mesh_t0, mesh_t1, bf)
-        with open(boxes_dir / f"{i}ee.json", "w") as f:
-            if boxes:
-                json.dump(boxes, f, separators=(",", ":"))
-            else:
-                f.write("[]")
+        # boxes:
+        if not (boxes_dir / f"{i}vf.json").exists():
+            boxes = vf_boxes(mesh_t0, mesh_t1, bf)
+            with open(boxes_dir / f"{i}vf.json", "w") as f:
+                if boxes:
+                    json.dump(boxes, f, separators=(",", ":"))
+                else:
+                    f.write("[]")
+        else:
+            with open(boxes_dir / f"{i}vf.json", "r") as f:
+                boxes = json.load(f)
+
+        # queries:
+        if len(boxes) > 0:
+            generate_rational_queries(
+                mesh_t0, mesh_t1, boxes, query_dir / f"{i}vf.csv")
+
+        # Edge-Edge
+
+        # boxes:
+        if not (boxes_dir / f"{i}ee.json").exists():
+            boxes = ee_boxes(mesh_t0, mesh_t1, bf)
+            with open(boxes_dir / f"{i}ee.json", "w") as f:
+                if boxes:
+                    json.dump(boxes, f, separators=(",", ":"))
+                else:
+                    f.write("[]")
+        else:
+            with open(boxes_dir / f"{i}ee.json", "r") as f:
+                boxes = json.load(f)
+
+        # queries:
+        if len(boxes) > 0:
+            generate_rational_queries(
+                mesh_t0, mesh_t1, boxes, query_dir / f"{i}ee.csv")
 
 
 def test():
