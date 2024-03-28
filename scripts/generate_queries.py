@@ -74,16 +74,12 @@ def generate_rational_queries(mesh_t0, mesh_t1, boxes, path):
             vertex_ids = [E[eaid][0], E[eaid][1], E[ebid][0], E[ebid][1]]
 
         for mesh in (mesh_t0, mesh_t1):
-            rational_vertices = [
-                [gmpy2.mpq(x) for x in point] for point in mesh.points]
             for vid in vertex_ids:
+                point = [gmpy2.mpq(x) for x in mesh.points[vid]]
                 lines.append("{},{},{},{},{},{}".format(
-                    str(rational_vertices[vid][0].numerator),
-                    str(rational_vertices[vid][0].denominator),
-                    str(rational_vertices[vid][1].numerator),
-                    str(rational_vertices[vid][1].denominator),
-                    str(rational_vertices[vid][2].numerator),
-                    str(rational_vertices[vid][2].denominator)))
+                    str(point[0].numerator), str(point[0].denominator),
+                    str(point[1].numerator), str(point[1].denominator),
+                    str(point[2].numerator), str(point[2].denominator)))
 
     with open(path, "w") as f:
         f.write("\n".join(lines))
