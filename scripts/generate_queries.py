@@ -1,11 +1,7 @@
-import sys
 import json
 import meshio
 import gmpy2
-
-sys.path.append(
-    "/Users/zachary/Development/research/contact/ipc-toolkit/build/release/python")
-import ipctk  # noqa
+import ipctk
 
 
 def vf_boxes(mesh_t0, mesh_t1, bf):
