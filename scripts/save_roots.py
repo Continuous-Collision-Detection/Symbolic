@@ -110,10 +110,10 @@ def main():
                 if roots_filename.exists():
                     if new_collides is not None:
                         new_collides[i // 8] = True
-                    # continue  # assumes this query has been processed successfully
+                    continue  # assumes this query has been processed successfully
                 result = session.evaluate(
                     Global.roots(query, str(roots_filename)))
-                print(result)
+                # print(result)
                 if new_collides is not None:
                     new_collides[i // 8] = result
                 else:
