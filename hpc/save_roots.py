@@ -16,7 +16,8 @@ def main():
                         action='store_true')
     parser.add_argument("--vf,--vertex_face", dest="edge_edge",
                         action='store_false', default=False)
-    parser.add_argument("n_jobs", type=int)
+    parser.add_argument("-n", "--n_jobs", dest="n_jobs", 
+                        type=int, default=-1)
     args = parser.parse_args()
 
     job_name = "ee" if args.edge_edge else "vf"
@@ -25,6 +26,9 @@ def main():
     log.mkdir(exist_ok=True)
 
     all_files = natsorted(args.all_files)
+
+    if args.n_jobs < 1:
+        args.n_jobs = len(all_files)
 
     delta = max(int(round(len(all_files) / args.n_jobs)), 1)
 
