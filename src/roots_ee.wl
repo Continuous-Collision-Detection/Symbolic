@@ -54,7 +54,7 @@ roots[data_, outfile_ : ""] :=
         (* Print[N[sss]]; *)
 
         value = False;
-        result = "";
+        (* result = ""; *)
         validRoots = {};
 
         For[i = 1, i <= Length[sss], i++,
@@ -67,34 +67,35 @@ roots[data_, outfile_ : ""] :=
                 value = False,
                 value = (t >= 0 && t <= 1 && la >= 0 && la <= 1 && lb >= 0 && lb <= 1)/.sss[[i]]
             ];
- 
+
             value = Reduce[value];
 
             simpleSol = True;
             If[value, Null;, Null;,
                 (* https://mathematica.stackexchange.com/q/188960 *)
                 value = RegionMeasure[
-                            ImplicitRegion[Reduce[{value, 0 <= t <= 1}, t], t], 
+                            ImplicitRegion[Reduce[{value, 0 <= t <= 1}, t], t],
                             Length[Flatten[{t}]]] > 0;
                 simpleSol = False;
             ];
-            
+
             If[value,
                 If[simpleSol,
                     AppendTo[validRoots, {"t"->t, "a"->la, "b"->lb}/.sss[[i]]];,
                     AppendTo[validRoots, {
-                        "t"->First[Reduce[{Reduce[(la >= 0 && la <= 1 && lb >= 0 && lb <= 1)/.sss[[1]]], 0 <= t <= 1}, t]], 
-                        "a"->la, 
+                        "t"->First[Reduce[{Reduce[(la >= 0 && la <= 1 && lb >= 0 && lb <= 1)/.sss[[1]]], 0 <= t <= 1}, t]],
+                        "a"->la,
                         "b"->lb}/.sss[[i]]];
                 ];
             ];
 
-            result = result <> ToString[value] <> "\n#####";
+            (* result = result <> ToString[value] <> "\n#####"; *)
         ];
 
         If[Length[validRoots] > 0 && outfile != "",
             Export[outfile, validRoots];
         ];
 
-        Return[result];
+        (* Return[result]; *)
+        Return[Length[validRoots] > 0];
     ]

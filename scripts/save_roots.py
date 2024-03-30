@@ -89,7 +89,7 @@ def main():
             with tarfile.open(tar_output, "r:gz") as tar:
                 if collides is not None and len(tar.getnames()) == sum(collides):
                     print(f"complete results exist: {tar_output}")
-                    #continue
+                    continue
                 tar.extractall(working_dir)
 
         if session is None:
@@ -125,7 +125,7 @@ def main():
         make_tarfile(tar_output, root_files)
         for f in root_files:
             f.unlink()  # delete file
-        
+
         if new_collides is not None:
             bools_path.parent.mkdir(parents=True, exist_ok=True)
             with open(bools_path, "w") as f:
