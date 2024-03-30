@@ -89,7 +89,7 @@ def main():
             with tarfile.open(tar_output, "r:gz") as tar:
                 if collides is not None and len(tar.getnames()) == sum(collides):
                     print(f"complete results exist: {tar_output}")
-                    continue
+                    #continue
                 tar.extractall(working_dir)
 
         if session is None:
@@ -101,7 +101,7 @@ def main():
             new_collides = None
 
         for i in tqdm(range(0, data.shape[0], 8)):
-            if collides is None or collides[i // 8]:
+            if collides is None or collides[i // 8] or True:
                 query = data[i:i+8, :6].tolist()
                 roots_filename = (
                     working_dir / (csv.stem + f"_q{i//8}_roots.wxf")
@@ -110,18 +110,14 @@ def main():
                 if roots_filename.exists():
                     if new_collides is not None:
                         new_collides[i // 8] = True
-                    continue  # assumes this query has been processed successfully
+                    # continue  # assumes this query has been processed successfully
                 result = session.evaluate(
                     Global.roots(query, str(roots_filename)))
-                # print(result)
+                print(result)
                 if new_collides is not None:
-                    new_collides[i // 8] = "True" in result
+                    new_collides[i // 8] = result
                 else:
-                    assert "True" in result
-
-        if new_collides is not None:
-            with open(bools_path, "w") as f:
-                json.dump(new_collides.tolist(), f, separators=(",", ":"))
+                    assert result
 
         # TAR up the root binary files to avoid using my files quota on HPC
         root_files = list(filter(lambda p: p.exists(), root_files))
@@ -129,6 +125,11 @@ def main():
         make_tarfile(tar_output, root_files)
         for f in root_files:
             f.unlink()  # delete file
+        
+        if new_collides is not None:
+            bools_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(bools_path, "w") as f:
+                json.dump(new_collides.tolist(), f, separators=(",", ":"))
 
     return session
 

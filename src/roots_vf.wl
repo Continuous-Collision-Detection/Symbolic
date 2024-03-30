@@ -32,7 +32,7 @@ roots[data_, outfile_ : ""] :=
         sss = Simplify[sss];
 
         value = False;
-        result = "";
+        (* result = ""; *)
         validRoots = {};
         
         For[i = 1, i <= Length[sss], i++,
@@ -66,12 +66,12 @@ roots[data_, outfile_ : ""] :=
                 ];
             ];
             
-            result = result <> ToString[value] <> "\n#####";
+            (* result = result <> ToString[value] <> "\n#####"; *)
         ];
 
         If[Length[validRoots] > 0 && outfile != "",
             Export[outfile, validRoots];
         ];
         
-        Return[result];
+        Return[Length[validRoots] > 0];
     ]
