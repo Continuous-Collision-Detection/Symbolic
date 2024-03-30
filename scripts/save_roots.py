@@ -57,6 +57,9 @@ def main():
         root_out_dir = csv.parents[1] / "roots"
         root_out_dir.mkdir(parents=True, exist_ok=True)
 
+        bools_path = (csv.parents[1] / "mma_bool" /
+                      (csv.stem + "_mma_bool.json"))
+
         working_dir = os.getenv("SLURM_TMPDIR")
         if working_dir is not None:
             working_dir = pathlib.Path(working_dir)
@@ -69,13 +72,12 @@ def main():
         assert (data.shape[0] % 8 == 0)
         if data.shape[1] > 6:
             collides = data[::8, -1].astype(bool)
-        else:
-            bools_path = (
-                csv.parents[1] / "mma_bool" / (csv.stem + "_mma_bool.json"))
-            assert (bools_path.exists())
+        elif bools_path.exists():
             with open(bools_path) as f:
                 collides = numpy.array(json.load(f))
-        if data.shape[0] // 8 != collides.shape[0]:
+        else:
+            collides = None
+        if collides is not None and data.shape[0] // 8 != collides.shape[0]:
             print("skipping", flush=True)
             continue
 
@@ -85,7 +87,7 @@ def main():
         if tar_output.exists():
             # extract existing roots files so they can be easily skipped later
             with tarfile.open(tar_output, "r:gz") as tar:
-                if len(tar.getnames()) == sum(collides):
+                if collides is not None and len(tar.getnames()) == sum(collides):
                     print(f"complete results exist: {tar_output}")
                     continue
                 tar.extractall(working_dir)
@@ -93,21 +95,35 @@ def main():
         if session is None:
             session = init_session(args)
 
+        if collides is None:
+            new_collides = numpy.zeros(data.shape[0] // 8, dtype=bool)
+        else:
+            new_collides = None
+
         for i in tqdm(range(0, data.shape[0], 8)):
-            if collides[i // 8]:
+            if collides is None or collides[i // 8]:
                 query = data[i:i+8, :6].tolist()
                 roots_filename = (
                     working_dir / (csv.stem + f"_q{i//8}_roots.wxf")
                 ).resolve()
                 root_files.append(roots_filename)
                 if roots_filename.exists():
+                    if new_collides is not None:
+                        new_collides[i // 8] = True
                     continue  # assumes this query has been processed successfully
                 result = session.evaluate(
                     Global.roots(query, str(roots_filename)))
                 # print(result)
-                assert ("True" in result)
+                if new_collides is not None:
+                    new_collides[i // 8] = "True" in result
+                else:
+                    assert "True" in result
 
-        # TAR up the root binary files to avoid using my # files quota on HPC
+        if new_collides is not None:
+            with open(bools_path, "w") as f:
+                json.dump(new_collides.tolist(), f, separators=(",", ":"))
+
+        # TAR up the root binary files to avoid using my files quota on HPC
         root_files = list(filter(lambda p: p.exists(), root_files))
         print(f"creating {tar_output}")
         make_tarfile(tar_output, root_files)
