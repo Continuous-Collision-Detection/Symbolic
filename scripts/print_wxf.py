@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Print the time of interest (toi) from a .wxf file."""
+"""Print the time of impact (toi) from a .wxf file."""
 
 import sys
 from wolframclient.deserializers import binary_deserialize
